@@ -1,0 +1,412 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>The Illustrated BLIP Message: Every Byte Explained</title>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+	<meta name="format-detection" content="telephone=no"/>
+	<meta name="title" content="The Illustrated BLIP Message"/>
+	<meta name="description" content="Every byte of a BLIP message explained and reproduced"/>
+	<link rel="stylesheet" href="frombootstrap.css?bust"/>
+	<link rel="stylesheet" href="illustrated.css?bust"/>
+	<script src="illustrated.js?bust"></script>
+</head>
+
+<body class="illustrated">
+<div class="container">
+	<h1>The Illustrated BLIP message</h1>
+
+	<h3>Every byte of a BLIP message explained and reproduced.</h3>
+
+	<div class="outerblock">
+	<p>Below you will find the contents of various types of BLIP messages, and their analysis</p>
+	</div>
+
+<div class="rec-outer">
+<div class="record client">
+<div class="rec-label">Uncompressed Message</div>
+<div class="rec-explanation">
+	This is an example of a message that is sent from
+	a client to a server.  As with all non-ACK BLIP messages
+	it contains the following items
+	<ul>
+	<li>message number
+	<li>frame flags
+	<li>properties
+	<li>body
+	<li>checksum
+	</ul>
+</div>
+<span class="record-data">
+	<span class="string">
+		<span class="label">Message Number</span>
+		<span class="bytes">
+ 03
+		</span>
+		<div class="explanation">
+			Each non-ACK message (and reply) in a BLIP packet contains
+			a message number to tie it to a specific back and forth
+			conversation.  So a message sent with message number 1, 
+			for example, will get either a reply with message number
+			1 or an error with message number 1
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Frame Flags</span>
+		<span class="bytes">
+ 30
+		</span>
+		<div class="explanation">
+			Each message contains flags with some metadata about the message.  It also indicates
+			what type of message it is.  The flags are as follows
+			<ul>
+				<li>0x00 - Request</li>
+				<li>0x01 - Response</li>
+				<li>0x02 - Error</li>
+				<li>0x04 - ACK Request</li>
+				<li>0x05 - ACK Response</li>
+				<li>0x08 - Compressed</li>
+				<li>0x10 - Urgent</li>
+				<li>0x20 - NoReply</li>
+				<li>0x40 - MoreComing</li>
+			</ul>
+			In this case the flags are 0x30, meaning that the message is urgent (i.e. should
+			be processed ahead of other messages), the type is "Request" and no response is 
+			needed from the other side
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Properties Length</span>
+		<span class="bytes">
+ 17
+		</span>
+		<div class="explanation">
+			The properties of a BLIP message are encoded as a length, followed
+			by the actual data.  The length is encoded as a 
+			<a href="https://developers.google.com/protocol-buffers/docs/encoding#varints">varint</a>.
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Properties</span>
+		<span class="bytes">
+50 72 6f 66 69 6c 65 00 70 72 6f 70 6f 73 65 43 68 61 6e 67 65 73 00
+		</span>
+		<div class="explanation">
+			This properties of the BLIP message follow its length.  Since the length was 0x17
+			in this case, it means there are 23 bytes of information.  The encoding here, Since
+			no compression is present, is simply key-value pairs of ASCII characters separated
+			by null: <br /> <br />
+			<pre>Profile\x0proposeChanges</pre>
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Message Body</span>
+		<span class="bytes">
+ 5b 5d
+		</span>
+		<div class="explanation">
+			The rest of the packet, up until 4 bytes before the end which is reserved,
+			is the body of the message.  In this case the body is very short, and happens
+			to be ASCII encoded as <pre>[]</pre>
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Checksum</span>
+		<span class="bytes">
+f4 3a ea 33
+		</span>
+		<div class="explanation">
+			Each message contains a checksum that is continuously calculated in one direction
+			of conversation to ensure that the message received is received in the correct
+			order
+		</div>
+	</span>
+</span>
+</div>
+</div>
+
+<div class="rec-outer">
+<div class="record server">
+<div class="rec-label">Message Reply</div>
+<div class="rec-explanation">
+	This is an example of a reply received from the remote side to
+	a message previously sent with a message number of 2.
+</div>
+<span class="record-data">
+	<span class="string">
+		<span class="label">Message Number</span>
+		<span class="bytes">
+ 02
+		</span>
+		<div class="explanation">
+			Each non-ACK message (and reply) in a BLIP packet contains
+			a message number to tie it to a specific back and forth
+			conversation.  So a message sent with message number 1, 
+			for example, will get either a reply with message number
+			1 or an error with message number 1
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Frame Flags</span>
+		<span class="bytes">
+ 01
+		</span>
+		<div class="explanation">
+			Each message contains flags with some metadata about the message.  It also indicates
+			what type of message it is.  The flags are as follows
+			<ul>
+				<li>0x00 - Request</li>
+				<li>0x01 - Response</li>
+				<li>0x02 - Error</li>
+				<li>0x04 - ACK Request</li>
+				<li>0x05 - ACK Response</li>
+				<li>0x08 - Compressed</li>
+				<li>0x10 - Urgent</li>
+				<li>0x20 - NoReply</li>
+				<li>0x40 - MoreComing</li>
+			</ul>
+			In this case the flags are 0x01, meaning that it is just a vanilla reply.
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Properties Length</span>
+		<span class="bytes">
+ 00
+		</span>
+		<div class="explanation">
+			The properties of a BLIP message are encoded as a length, followed
+			by the actual data.  The length is encoded as a 
+			<a href="https://developers.google.com/protocol-buffers/docs/encoding#varints">varint</a>.
+			In this case the length is 0, so no properties are present.
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Checksum</span>
+		<span class="bytes">
+10 47 00 f4
+		</span>
+		<div class="explanation">
+			There are only 4 bytes left in the payload of the message, so this reply also
+			has no message body and so all that remains is the checksum.
+		</div>
+	</span>
+</span>
+</div>
+</div>
+
+<div class="rec-outer">
+<div class="record client">
+<div class="rec-label">Compressed Message</div>
+<div class="rec-explanation">
+	This example message is similar to the uncompressed example, except that the
+	body of the message is first run through deflate compression to make it smaller.
+	The connection keeps a context open so all compressed messages in each direction
+	can be thought of as one long never ending compressed archive.
+</div>
+<span class="record-data">
+	<span class="string">
+		<span class="label">Message Number</span>
+		<span class="bytes">
+ 05
+		</span>
+		<div class="explanation">
+			Each non-ACK message (and reply) in a BLIP packet contains
+			a message number to tie it to a specific back and forth
+			conversation.  So a message sent with message number 1, 
+			for example, will get either a reply with message number
+			1 or an error with message number 1
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Frame Flags</span>
+		<span class="bytes">
+ 08
+		</span>
+		<div class="explanation">
+			Each message contains flags with some metadata about the message.  It also indicates
+			what type of message it is.  The flags are as follows
+			<ul>
+				<li>0x00 - Request</li>
+				<li>0x01 - Response</li>
+				<li>0x02 - Error</li>
+				<li>0x04 - ACK Request</li>
+				<li>0x05 - ACK Response</li>
+				<li>0x08 - Compressed</li>
+				<li>0x10 - Urgent</li>
+				<li>0x20 - NoReply</li>
+				<li>0x40 - MoreComing</li>
+			</ul>
+			In this case the flags are 0x08, which indicates the body of the message is compressed.
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Compressed Payload</span>
+		<span class="bytes">
+8c 52 cb 4e c3 30 10 cc a7 a0 3d bb c8 ce c3 49 7c 44 45 a2 e2 21 40 e2 54 55 56 54 3b c5 6d 63 87
+c4 69 91 a2 fc 3b 6b 4a 11 27 e0 64 d9 e3 99 9d d5 8c 3f 27 d8 e9 43 64 54 f4 5b 6c 9f 7f fe 1f 5c
+d4 eb b7 41 db b5 8e 58 64 dd da d9 1a 45 7d 8f b7 11 a4 51 20 fe ea c8 de f4 5e ba 5a aa 40 03 b1
+1c a1 ee 8c b6 4a 3a ab 91 3d df 2c 1e de 17 cf 8d a9 61 22 df 98 3f 3a c4 da 97 be bd 7e bc bd 3a
+18 98 56 04 be 64 83 08 fc 9c 07 88 a9 ca 6b e9 4d a3 65 a5 b0 3e 48 8e 69 4c 67 b4 9c c5 f4 82 71
+41 99 c8 f2 cb 92 97 3c c9 d0 54 30 23 8f c6 bf ca 60 0f c4 08 a7 73 59 57 fb 5e 13 df 0d 7a 35 91
+f3 63 c1 e2 34 cf 28 cf 52 9e 60 51 30 88 82 e4 45 4e 51 8d 15 94 63 2b 69 9a 26 25 da 18 da 60 04
+1d d2 d3 8c a0 6c ab 26 2c 7a bf db cc 77 77 37 4f db 2d 4c d3 07 00
+		</span>
+		<div class="explanation">
+			The structure of the data is identical to that of uncompressed data, minus the other
+			items the appear before and after in this message (message number, flags, checksum).
+			It first needs to be uncompressed, and then it can be examined.
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Checksum</span>
+		<span class="bytes">
+65 7a 6a ed
+		</span>
+		<div class="explanation">
+			As usual, the final 4 bytes of the message are the checksum
+		</div>
+	</span>
+</span>
+</div>
+</div>
+
+<div class="rec-outer">
+<div class="record server">
+<div class="rec-label">Error Response</div>
+<div class="rec-explanation">
+	Sometimes there are requests that the other side cannot fulfill.  In This
+	event an error response can be received to a message.  In this case, an
+	error message was received in response to request message number 1.
+</div>
+<span class="record-data">
+	<span class="string">
+		<span class="label">Message Number</span>
+		<span class="bytes">
+	01
+		</span>
+		<div class="explanation">
+			Each non-ACK message (and reply) in a BLIP packet contains
+			a message number to tie it to a specific back and forth
+			conversation.  So a message sent with message number 1, 
+			for example, will get either a reply with message number
+			1 or an error with message number 1
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Frame Flags</span>
+		<span class="bytes">
+	02
+		</span>
+		<div class="explanation">
+			Each message contains flags with some metadata about the message.  It also indicates
+			what type of message it is.  The flags are as follows
+			<ul>
+				<li>0x00 - Request</li>
+				<li>0x01 - Response</li>
+				<li>0x02 - Error</li>
+				<li>0x04 - ACK Request</li>
+				<li>0x05 - ACK Response</li>
+				<li>0x08 - Compressed</li>
+				<li>0x10 - Urgent</li>
+				<li>0x20 - NoReply</li>
+				<li>0x40 - MoreComing</li>
+			</ul>
+			In this case the flags are 0x02, which means this is an error message.
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Properties Length</span>
+		<span class="bytes">
+	21
+		</span>
+		<div class="explanation">
+			The properties of a BLIP message are encoded as a length, followed
+			by the actual data.  The length is encoded as a 
+			<a href="https://developers.google.com/protocol-buffers/docs/encoding#varints">varint</a>.
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Properties</span>
+		<span class="bytes">
+45 72 72 6f 72 2d 44 6f 6d 61 69 6e 00 48 54 54 50 00 45 72 72 6f 72 2d 43 6f 64 65 00 34 30 34
+00
+		</span>
+		<div class="explanation">
+			This properties of the BLIP message follow its length.  Since the length was 0x21
+			in this case, it means there are 33 bytes of information.  The encoding here, Since
+			no compression is present, is simply key-value pairs of ASCII characters separated
+			by null: <br /> <br />
+			<pre>Error-Domain\x0HTTP\x0Error-Code\x0404</pre>
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Message Body</span>
+		<span class="bytes">
+6d 69 73 73 69 6e 67
+		</span>
+		<div class="explanation">
+			The rest of the packet, up until 4 bytes before the end which is reserved,
+			is the body of the message.  In this case, it is the ASCII encoded message
+			of the error: <pre>missing</pre>
+		</div>
+	</span>
+
+	<span class="string">
+		<span class="label">Checksum</span>
+		<span class="bytes">
+92 10 de bc
+		</span>
+		<div class="explanation">
+			As usual, the final 4 bytes of the message are the checksum
+		</div>
+	</span>
+</span>
+</div>
+</div>
+</div>
+</div>
+
+	<div class="outerblock">
+	<p>The code for this project that inspired this page can be found
+	<a href="https://github.com/syncsynchalt/illustrated-tls">on GitHub</a>.</p>
+	</div>
+
+	<div class="outerblock">
+	<p>Special thanks to the original author, on Twitter at
+	<a href="https://twitter.com/xargsnotbombs">@XargsNotBombs</a>.</p>
+	</div>
+
+</div>
+
+<div id="templates" style="display: none">
+	<div id="closeBtnTmpl">
+		<span class="close" onclick="ill.unselectAllStrings()">×</span>
+	</div>
+	<div id="showCodeTmpl">
+		<button class="show-code" onclick="ill.showCode(this, event)">Show Code</button>
+	</div>
+	<button id="annotateTmpl" class="annotate-toggle"
+		onclick="ill.toggleAnnotate(this.parentElement, event)">Annotations</button>
+</div>
+
+<a class="print-mode" href="#print" onclick="ill.printMode()">
+	[print]
+</a>
+</body>
+</html>
